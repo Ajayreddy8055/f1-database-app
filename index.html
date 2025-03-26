@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>F1 Database</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
+      color: white;
+      text-align: center;
+      padding: 20px;
+    }
+    h1 {
+      font-size: 42px;
+      margin-top: 10px;
+      color: #ff3c00;
+    }
+    .banner {
+      width: 100%;
+      max-width: 600px; /* Smaller banner to fit */
+      height: auto;
+      border-radius: 12px;
+      margin: 10px auto; /* Reduced spacing */
+      display: block;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.6);
+    }
+    .nav-buttons {
+      margin-top: 15px; /* Reduced space */
+    }
+    .nav-buttons a {
+      display: inline-block;
+      margin: 8px;
+      padding: 10px 20px;
+      background-color: #ff3c00;
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
+      font-size: 14px; /* Smaller text */
+      transition: background-color 0.3s;
+    }
+    .nav-buttons a:hover {
+      background-color: #e03200;
+    }
+    #login-area {
+      margin-top: 20px; /* Adjusted for better spacing */
+    }
+    input, button {
+      padding: 10px;
+      border: none;
+      border-radius: 5px;
+      margin: 5px;
+    }
+    input {
+      width: 200px;
+    }
+    button {
+      background-color: #ff3c00;
+      color: white;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #e03200;
+    }
+  </style>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+
+  <!-- Firebase Config and Login -->
+  <script src="firebase-config.js"></script>
+  <script src="firebase-login.js"></script>
+</head>
+<body>
+  <h1>🏁 F1 Database Hub</h1>
+  <img src="banner.jpg" alt="F1 Banner" class="banner">
+
+
+
+  <div class="nav-buttons">
+    <a href="add-driver.html">Add Driver</a>
+    <a href="add-team.html">Add Team</a>
+    <a href="view-drivers.html">View Drivers</a>
+    <a href="view-teams.html">View Teams</a>
+    <a href="compare-drivers.html">Compare Drivers</a>
+    <a href="compare-teams.html">Compare Teams</a>
+  </div>
+
+  <div id="login-area"></div>
+</body>
+</html>

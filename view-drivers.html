@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>View Drivers</title>
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+  <script src="firebase-config.js"></script>
+  <script src="firebase-login.js"></script>
+</head>
+<body>
+  <h2>F1 Drivers</h2>
+
+  <!-- Filter Form -->
+  <label for="filter">Filter by:</label>
+  <select id="filter">
+    <option value="age">Age</option>
+    <option value="pole_positions">Pole Positions</option>
+    <option value="race_wins">Race Wins</option>
+    <option value="points">Points</option>
+    <option value="world_titles">World Titles</option>
+  </select>
+
+  <label for="condition">Condition:</label>
+  <select id="condition">
+    <option value=">">Greater than</option>
+    <option value="=">Equal to</option>
+    <option value="<">Less than</option>
+  </select>
+
+  <input type="number" id="value" placeholder="Enter value">
+  <button onclick="filterDrivers()">Filter</button>
+
+  <h3>Drivers List:</h3>
+  <ul id="driver-list"></ul>
+
+  <script>
+    const db = firebase.firestore();
+    
+    function loadDrivers() {
+      db.collection("drivers").get().then((querySnapshot) => {
+        const list = document.getElementById("driver-list");
+        list.innerHTML = "";
+        querySnapshot.forEach((doc) => {
+          const driver = doc.data();
+          list.innerHTML += `<li>${doc.id} - ${driver.age} years old, ${driver.race_wins} wins</li>`;
+        });
+      });
+    }
+
+    function filterDrivers() {
+      const attribute = document.getElementById("filter").value;
+      const condition = document.getElementById("condition").value;
+      const value = parseInt(document.getElementById("value").value);
+
+      let query = db.collection("drivers");
+
+      if (condition === ">") {
+        query = query.where(attribute, ">", value);
+      } else if (condition === "=") {
+        query = query.where(attribute, "==", value);
+      } else if (condition === "<") {
+        query = query.where(attribute, "<", value);
+      }
+
+      query.get().then((querySnapshot) => {
+        const list = document.getElementById("driver-list");
+        list.innerHTML = "";
+        querySnapshot.forEach((doc) => {
+          const driver = doc.data();
+          list.innerHTML += `<li>${doc.id} - ${driver.age} years old, ${driver.race_wins} wins</li>`;
+        });
+      });
+    }
+
+    window.onload = loadDrivers;
+  </script>
+</body>
+</html>

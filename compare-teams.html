@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Compare Teams</title>
+  <style>
+    table, th, td {
+      border: 1px solid black;
+      border-collapse: collapse;
+      padding: 10px;
+    }
+    .better {
+      background-color: lightgreen;
+    }
+  </style>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+  <script src="firebase-config.js"></script>
+</head>
+<body>
+  <h2>Compare Two Teams</h2>
+
+  <label for="team1">Select Team 1:</label>
+  <select id="team1"></select>
+
+  <label for="team2">Select Team 2:</label>
+  <select id="team2"></select>
+
+  <button onclick="compareTeams()">Compare</button>
+
+  <h3>Comparison Result:</h3>
+  <table>
+    <tr>
+      <th>Attribute</th>
+      <th id="team1-name">Team 1</th>
+      <th id="team2-name">Team 2</th>
+    </tr>
+    <tr><td>Founded</td><td id="founded1"></td><td id="founded2"></td></tr>
+    <tr><td>Pole Positions</td><td id="pole1"></td><td id="pole2"></td></tr>
+    <tr><td>Race Wins</td><td id="wins1"></td><td id="wins2"></td></tr>
+    <tr><td>Constructor Titles</td><td id="titles1"></td><td id="titles2"></td></tr>
+    <tr><td>Last Season Position</td><td id="pos1"></td><td id="pos2"></td></tr>
+  </table>
+
+  <script>
+    const db = firebase.firestore();
+
+    function loadTeams() {
+      const team1 = document.getElementById("team1");
+      const team2 = document.getElementById("team2");
+
+      team1.innerHTML = `<option value="" disabled selected>Select a team</option>`;
+      team2.innerHTML = `<option value="" disabled selected>Select a team</option>`;
+
+      db.collection("teams").get()
+        .then((querySnapshot) => {
+          let count = 0;
+          querySnapshot.forEach((doc) => {
+            count++;
+            let option = `<option value="${doc.id}">${doc.id}</option>`;
+            team1.innerHTML += option;
+            team2.innerHTML += option;
+          });
+
+          if (count === 0) {
+            alert("No teams found! Add teams in Firestore first.");
+          }
+        })
+        .catch((error) => {
+          console.error("Error fetching teams:", error);
+          alert("Failed to load teams. Check Firestore setup.");
+        });
+    }
+
+    function compareTeams() {
+      const team1Name = document.getElementById("team1").value;
+      const team2Name = document.getElementById("team2").value;
+
+      if (!team1Name || !team2Name || team1Name === team2Name) {
+        alert("Please select two different teams.");
+        return;
+      }
+
+      Promise.all([
+        db.collection("teams").doc(team1Name).get(),
+        db.collection("teams").doc(team2Name).get()
+      ]).then((docs) => {
+        if (docs[0].exists && docs[1].exists) {
+          const team1 = docs[0].data();
+          const team2 = docs[1].data();
+
+          document.getElementById("team1-name").innerText = team1Name;
+          document.getElementById("team2-name").innerText = team2Name;
+
+          compareStat("founded", team1.founded, team2.founded, true);
+          compareStat("pole", team1.pole_positions, team2.pole_positions);
+          compareStat("wins", team1.race_wins, team2.race_wins);
+          compareStat("titles", team1.constructor_titles, team2.constructor_titles);
+          compareStat("pos", team1.last_season_position, team2.last_season_position, true);
+        }
+      });
+    }
+
+    function compareStat(id, value1, value2, lowerBetter = false) {
+      document.getElementById(id + "1").innerText = value1;
+      document.getElementById(id + "2").innerText = value2;
+
+      document.getElementById(id + "1").classList.remove("better");
+      document.getElementById(id + "2").classList.remove("better");
+
+      if (lowerBetter) {
+        if (value1 < value2) {
+          document.getElementById(id + "1").classList.add("better");
+        } else {
+          document.getElementById(id + "2").classList.add("better");
+        }
+      } else {
+        if (value1 > value2) {
+          document.getElementById(id + "1").classList.add("better");
+        } else {
+          document.getElementById(id + "2").classList.add("better");
+        }
+      }
+    }
+
+    window.onload = loadTeams;
+  </script>
+</body>
+</html>

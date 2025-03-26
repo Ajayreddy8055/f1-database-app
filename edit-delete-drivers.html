@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Edit & Delete Drivers</title>
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+  <script src="firebase-config.js"></script>
+  <script src="firebase-login.js"></script>
+</head>
+<body>
+  <h2>Edit & Delete F1 Drivers</h2>
+
+  <h3>Drivers List:</h3>
+  <ul id="driver-list"></ul>
+
+  <h3>Edit Driver:</h3>
+  <form id="edit-driver-form">
+    <input type="text" id="edit-name" placeholder="Driver Name (Read-only)" readonly><br><br>
+    <input type="number" id="edit-age" placeholder="Age"><br><br>
+    <input type="number" id="edit-pole" placeholder="Total Pole Positions"><br><br>
+    <input type="number" id="edit-wins" placeholder="Total Race Wins"><br><br>
+    <input type="number" id="edit-points" placeholder="Total Points Scored"><br><br>
+    <input type="number" id="edit-titles" placeholder="World Titles"><br><br>
+    <input type="number" id="edit-fastest" placeholder="Fastest Laps"><br><br>
+    <input type="text" id="edit-team" placeholder="Team Name"><br><br>
+    <button type="submit">Update Driver</button>
+  </form>
+
+  <script>
+    const db = firebase.firestore();
+
+    function loadDrivers() {
+      db.collection("drivers").get().then((querySnapshot) => {
+        const list = document.getElementById("driver-list");
+        list.innerHTML = "";
+        querySnapshot.forEach((doc) => {
+          const driver = doc.data();
+          list.innerHTML += `
+            <li>
+              ${doc.id} - ${driver.age} years old, ${driver.race_wins} wins
+              <button onclick="editDriver('${doc.id}')">Edit</button>
+              <button onclick="deleteDriver('${doc.id}')">Delete</button>
+            </li>
+          `;
+        });
+      });
+    }
+
+    function editDriver(name) {
+      db.collection("drivers").doc(name).get().then((doc) => {
+        if (doc.exists) {
+          const driver = doc.data();
+          document.getElementById("edit-name").value = name;
+          document.getElementById("edit-age").value = driver.age;
+          document.getElementById("edit-pole").value = driver.pole_positions;
+          document.getElementById("edit-wins").value = driver.race_wins;
+          document.getElementById("edit-points").value = driver.points;
+          document.getElementById("edit-titles").value = driver.world_titles;
+          document.getElementById("edit-fastest").value = driver.fastest_laps;
+          document.getElementById("edit-team").value = driver.team;
+        }
+      });
+    }
+
+    document.getElementById("edit-driver-form").addEventListener("submit", function (e) {
+      e.preventDefault();
+      const name = document.getElementById("edit-name").value;
+      if (!loggedIn) {
+        alert("You must be logged in to edit a driver.");
+        return;
+      }
+
+      db.collection("drivers").doc(name).update({
+        age: parseInt(document.getElementById("edit-age").value),
+        pole_positions: parseInt(document.getElementById("edit-pole").value),
+        race_wins: parseInt(document.getElementById("edit-wins").value),
+        points: parseInt(document.getElementById("edit-points").value),
+        world_titles: parseInt(document.getElementById("edit-titles").value),
+        fastest_laps: parseInt(document.getElementById("edit-fastest").value),
+        team: document.getElementById("edit-team").value.trim()
+      }).then(() => {
+        alert("Driver updated successfully!");
+        loadDrivers();
+      }).catch(error => {
+        alert("Error: " + error.message);
+      });
+    });
+
+    function deleteDriver(name) {
+      if (!loggedIn) {
+        alert("You must be logged in to delete a driver.");
+        return;
+      }
+
+      if (confirm(`Are you sure you want to delete ${name}?`)) {
+        db.collection("drivers").doc(name).delete().then(() => {
+          alert("Driver deleted successfully!");
+          loadDrivers();
+        }).catch(error => {
+          alert("Error: " + error.message);
+        });
+      }
+    }
+
+    window.onload = loadDrivers;
+  </script>
+</body>
+</html>

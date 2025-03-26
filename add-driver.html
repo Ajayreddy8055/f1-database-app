@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Add Driver</title>
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+  <script src="firebase-config.js"></script>
+  <script src="firebase-login.js"></script>
+</head>
+<body>
+  <h2>Add a New F1 Driver</h2>
+
+  <form id="driver-form">
+    <input type="text" id="name" placeholder="Driver Name" required><br><br>
+    <input type="number" id="age" placeholder="Age" required><br><br>
+    <input type="number" id="pole" placeholder="Total Pole Positions"><br><br>
+    <input type="number" id="wins" placeholder="Total Race Wins"><br><br>
+    <input type="number" id="points" placeholder="Total Points Scored"><br><br>
+    <input type="number" id="titles" placeholder="World Titles"><br><br>
+    <input type="number" id="fastest" placeholder="Fastest Laps"><br><br>
+    <input type="text" id="team" placeholder="Team Name"><br><br>
+    <button type="submit">Add Driver</button>
+  </form>
+
+  <div id="login-area"></div>
+
+  <script>
+    const db = firebase.firestore();
+
+    document.getElementById("driver-form").addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      if (!loggedIn) {
+        alert("You must be logged in to add a driver.");
+        return;
+      }
+
+      const name = document.getElementById("name").value.trim();
+      if (!name) {
+        alert("Driver name is required");
+        return;
+      }
+
+      db.collection("drivers").doc(name).set({
+        age: parseInt(document.getElementById("age").value),
+        pole_positions: parseInt(document.getElementById("pole").value || 0),
+        race_wins: parseInt(document.getElementById("wins").value || 0),
+        points: parseInt(document.getElementById("points").value || 0),
+        world_titles: parseInt(document.getElementById("titles").value || 0),
+        fastest_laps: parseInt(document.getElementById("fastest").value || 0),
+        team: document.getElementById("team").value.trim()
+      })
+      .then(() => {
+        alert("Driver added successfully!");
+        document.getElementById("driver-form").reset();
+      })
+      .catch(error => {
+        alert("Error: " + error.message);
+      });
+    });
+  </script>
+</body>
+</html>

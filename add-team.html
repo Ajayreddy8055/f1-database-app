@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Add Team</title>
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+  <script src="firebase-config.js"></script>
+  <script src="firebase-login.js"></script>
+</head>
+<body>
+  <h2>Add a New F1 Team</h2>
+
+  <form id="team-form">
+    <input type="text" id="name" placeholder="Team Name" required><br><br>
+    <input type="number" id="founded" placeholder="Year Founded" required><br><br>
+    <input type="number" id="pole" placeholder="Total Pole Positions"><br><br>
+    <input type="number" id="wins" placeholder="Total Race Wins"><br><br>
+    <input type="number" id="titles" placeholder="Constructor Titles"><br><br>
+    <input type="number" id="position" placeholder="Finishing Position Last Season"><br><br>
+    <button type="submit">Add Team</button>
+  </form>
+
+  <div id="login-area"></div>
+
+  <script>
+    const db = firebase.firestore();
+
+    document.getElementById("team-form").addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      if (!loggedIn) {
+        alert("You must be logged in to add a team.");
+        return;
+      }
+
+      const name = document.getElementById("name").value.trim();
+      if (!name) {
+        alert("Team name is required");
+        return;
+      }
+
+      db.collection("teams").doc(name).set({
+        founded: parseInt(document.getElementById("founded").value),
+        pole_positions: parseInt(document.getElementById("pole").value || 0),
+        race_wins: parseInt(document.getElementById("wins").value || 0),
+        constructor_titles: parseInt(document.getElementById("titles").value || 0),
+        last_season_position: parseInt(document.getElementById("position").value || 0)
+      })
+      .then(() => {
+        alert("Team added successfully!");
+        document.getElementById("team-form").reset();
+      })
+      .catch(error => {
+        alert("Error: " + error.message);
+      });
+    });
+  </script>
+</body>
+</html>

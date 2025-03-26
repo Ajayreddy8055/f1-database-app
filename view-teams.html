@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>View Teams</title>
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+  <script src="firebase-config.js"></script>
+  <script src="firebase-login.js"></script>
+</head>
+<body>
+  <h2>F1 Teams</h2>
+
+  <!-- Filter Form -->
+  <label for="team-filter">Filter by:</label>
+  <select id="team-filter">
+    <option value="founded">Year Founded</option>
+    <option value="pole_positions">Pole Positions</option>
+    <option value="race_wins">Race Wins</option>
+    <option value="constructor_titles">Constructor Titles</option>
+  </select>
+
+  <label for="team-condition">Condition:</label>
+  <select id="team-condition">
+    <option value=">">Greater than</option>
+    <option value="=">Equal to</option>
+    <option value="<">Less than</option>
+  </select>
+
+  <input type="number" id="team-value" placeholder="Enter value">
+  <button onclick="filterTeams()">Filter</button>
+
+  <h3>Teams List:</h3>
+  <ul id="team-list"></ul>
+
+  <script>
+    const db = firebase.firestore();
+    
+    function loadTeams() {
+      db.collection("teams").get().then((querySnapshot) => {
+        const list = document.getElementById("team-list");
+        list.innerHTML = "";
+        querySnapshot.forEach((doc) => {
+          const team = doc.data();
+          list.innerHTML += `<li>${doc.id} - Founded in ${team.founded}, ${team.race_wins} wins</li>`;
+        });
+      });
+    }
+
+    function filterTeams() {
+      const attribute = document.getElementById("team-filter").value;
+      const condition = document.getElementById("team-condition").value;
+      const value = parseInt(document.getElementById("team-value").value);
+
+      let query = db.collection("teams");
+
+      if (condition === ">") {
+        query = query.where(attribute, ">", value);
+      } else if (condition === "=") {
+        query = query.where(attribute, "==", value);
+      } else if (condition === "<") {
+        query = query.where(attribute, "<", value);
+      }
+
+      query.get().then((querySnapshot) => {
+        const list = document.getElementById("team-list");
+        list.innerHTML = "";
+        querySnapshot.forEach((doc) => {
+          const team = doc.data();
+          list.innerHTML += `<li>${doc.id} - Founded in ${team.founded}, ${team.race_wins} wins</li>`;
+        });
+      });
+    }
+
+    window.onload = loadTeams;
+  </script>
+</body>
+</html>

@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Compare Drivers</title>
+  <style>
+    table, th, td {
+      border: 1px solid black;
+      border-collapse: collapse;
+      padding: 10px;
+    }
+    .better {
+      background-color: lightgreen;
+    }
+  </style>
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+  <!-- Firebase Config -->
+  <script src="firebase-config.js"></script>
+</head>
+<body>
+  <h2>Compare Two Drivers</h2>
+
+  <label for="driver1">Select Driver 1:</label>
+  <select id="driver1"></select>
+
+  <label for="driver2">Select Driver 2:</label>
+  <select id="driver2"></select>
+
+  <button onclick="compareDrivers()">Compare</button>
+
+  <h3>Comparison Result:</h3>
+  <table>
+    <tr>
+      <th>Attribute</th>
+      <th id="driver1-name">Driver 1</th>
+      <th id="driver2-name">Driver 2</th>
+    </tr>
+    <tr><td>Age</td><td id="age1"></td><td id="age2"></td></tr>
+    <tr><td>Pole Positions</td><td id="pole1"></td><td id="pole2"></td></tr>
+    <tr><td>Race Wins</td><td id="wins1"></td><td id="wins2"></td></tr>
+    <tr><td>Points</td><td id="points1"></td><td id="points2"></td></tr>
+    <tr><td>World Titles</td><td id="titles1"></td><td id="titles2"></td></tr>
+    <tr><td>Fastest Laps</td><td id="fastest1"></td><td id="fastest2"></td></tr>
+  </table>
+
+  <script>
+    const db = firebase.firestore();
+
+    function loadDrivers() {
+      db.collection("drivers").get().then((querySnapshot) => {
+        const driver1 = document.getElementById("driver1");
+        const driver2 = document.getElementById("driver2");
+
+        driver1.innerHTML = `<option value="" disabled selected>Select a driver</option>`;
+        driver2.innerHTML = `<option value="" disabled selected>Select a driver</option>`;
+
+        let count = 0;
+
+        querySnapshot.forEach((doc) => {
+          count++;
+          let option = `<option value="${doc.id}">${doc.id}</option>`;
+          driver1.innerHTML += option;
+          driver2.innerHTML += option;
+        });
+
+        if (count === 0) {
+          alert("No drivers found in Firestore! Please add drivers first.");
+        }
+      }).catch(error => {
+        console.error("Error fetching drivers:", error);
+        alert("Failed to load drivers. Check Firestore setup.");
+      });
+    }
+
+    function compareDrivers() {
+      const driver1Name = document.getElementById("driver1").value;
+      const driver2Name = document.getElementById("driver2").value;
+
+      if (!driver1Name || !driver2Name || driver1Name === driver2Name) {
+        alert("Please select two different drivers.");
+        return;
+      }
+
+      Promise.all([
+        db.collection("drivers").doc(driver1Name).get(),
+        db.collection("drivers").doc(driver2Name).get()
+      ]).then((docs) => {
+        if (docs[0].exists && docs[1].exists) {
+          const driver1 = docs[0].data();
+          const driver2 = docs[1].data();
+
+          document.getElementById("driver1-name").innerText = driver1Name;
+          document.getElementById("driver2-name").innerText = driver2Name;
+
+          compareStat("age", driver1.age, driver2.age, true);
+          compareStat("pole", driver1.pole_positions, driver2.pole_positions);
+          compareStat("wins", driver1.race_wins, driver2.race_wins);
+          compareStat("points", driver1.points, driver2.points);
+          compareStat("titles", driver1.world_titles, driver2.world_titles);
+          compareStat("fastest", driver1.fastest_laps, driver2.fastest_laps);
+        }
+      });
+    }
+
+    function compareStat(id, value1, value2, lowerBetter = false) {
+      document.getElementById(id + "1").innerText = value1;
+      document.getElementById(id + "2").innerText = value2;
+
+      document.getElementById(id + "1").classList.remove("better");
+      document.getElementById(id + "2").classList.remove("better");
+
+      if (lowerBetter) {
+        if (value1 < value2) {
+          document.getElementById(id + "1").classList.add("better");
+        } else {
+          document.getElementById(id + "2").classList.add("better");
+        }
+      } else {
+        if (value1 > value2) {
+          document.getElementById(id + "1").classList.add("better");
+        } else {
+          document.getElementById(id + "2").classList.add("better");
+        }
+      }
+    }
+
+    window.onload = loadDrivers;
+  </script>
+</body>
+</html>
